@@ -1,11 +1,16 @@
 package api
 
 import (
+	"bytes"
 	"database/sql"
+	"encoding/json"
+	"io/ioutil"
 	"net/http"
 	db "simpleBank/db/sqlc"
+	"testing"
 
 	"github.com/gin-gonic/gin"
+	"github.com/stretchr/testify/require"
 )
 
 type createAccountRequest struct {
@@ -84,4 +89,14 @@ func (server *Server) listAccount(ctx *gin.Context) {
 		return
 	}
 	ctx.JSON(http.StatusOK, account)
+}
+
+func requireBodyMatchAccount(t *testing.T, body *bytes.Buffer, account db.Account) {
+	data, err := ioutil.ReadAll(body)
+	require.NoError(t, err)
+
+	var gotAccount db.Account
+	err = json.Unmarshal(data, &gotAccount)
+	require.NoError(t, err)
+	require.Equal(t, account, gotAccount)
 }
